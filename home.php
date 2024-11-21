@@ -2,24 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Campus Map Explorer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VGEC GO</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f4f6f9;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-        .campus-container {
-            max-width: 1100px;
-            margin: 2rem auto;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            border-radius: 16px;
+            background-color: #f4f7fa;
+            height: 100vh;
+            margin: 0;
             overflow: hidden;
         }
+        .campus-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            height: 100vh;
+            max-height: 100vh;
+        }
         .map-section {
-            background-color: white;
             position: relative;
-            max-height: 600px;
             overflow: hidden;
         }
         .map-image {
@@ -40,37 +42,28 @@
             z-index: 10;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
+        
         .details-section {
-            background-color: #ffffff;
-            border-left: 2px solid #e5e7eb;
-            padding: 2rem;
+            background-color: white;
             display: flex;
             flex-direction: column;
+            padding: 1rem;
+            overflow: hidden;
         }
-        .details-header {
-            border-bottom: 3px solid #3b82f6;
-            padding-bottom: 1rem;
+        .search-container {
+            background-color: #f0f4f8;
+            border-radius: 12px;
+            padding: 1rem;
             margin-bottom: 1rem;
-        }
-        .details-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #4a5568;
-            overflow-y: auto; /* Allow vertical scrolling without x-axis scrollbar */
-            max-height: 400px; /* Limit height to prevent overflow */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
         .block-info-list {
-            width: 100%;
-            max-height: 300px;
             overflow-y: auto;
-            overflow-x: hidden; /* Prevent horizontal scrolling */
+            max-height: calc(100vh - 300px);
+            padding-right: 0.5rem;
         }
         .block-info-item {
-            background-color: #f7fafc;
+            background-color: #f1f5f9;
             border-radius: 10px;
             padding: 1rem;
             margin-bottom: 0.75rem;
@@ -78,34 +71,27 @@
             justify-content: space-between;
             align-items: center;
             transition: all 0.3s ease;
-            width: calc(100% - 2px); /* Prevent scrollbar appearance */
         }
         .block-info-item:hover {
-            background-color: #f0f9ff;
-            transform: translateX(2px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: #e2e8f0;
+            transform: translateX(5px);
         }
-        .logo-container {
-            text-align: center;
-            margin-bottom: 1rem;
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
         }
-        .logo-text {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #1E6198;
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div class="logo-container">
-        <span class="logo-text">VGEC GO</span>
-    </div>
-    <div class="campus-container grid grid-cols-3 bg-white">
-        <!-- Map Section (Kept same as previous version) -->
-        <div class="map-section col-span-2 relative">
+<body>
+    <div class="campus-container">
+        <!-- Map Section -->
+        <div class="map-section relative">
             <img src="./sitemap.jpg" alt="Campus Map" class="map-image">
             
-            <!-- Blocks with dynamic positioning and colors -->
+            <!-- Blocks with dynamic positioning -->
             <div class="block" onclick="showInfo('A')" style="left: 66%; top: 55%; width: 7%; height: 9%; "></div>
             <div class="block" onclick="showInfo('B')" style="left: 58%; top: 64%; width: 8%; height: 9%; "></div>
             <div class="block" onclick="showInfo('C')" style="left: 52%; top: 53%; width: 7%; height: 9%; "></div>
@@ -123,23 +109,61 @@
         </div>
 
         <!-- Details Section -->
-        <div class="details-section col-span-1">
-            <div class="details-header">
-                <h2 id="infoTitle" class="text-2xl font-bold text-gray-800">Select a Block</h2>
+        <div class="details-section">
+            <!-- Search Container -->
+            <div class="search-container">
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-2 flex items-center">
+                        <i class="ri-search-line mr-2 text-blue-600"></i>
+                        Faculty Search
+                    </h2>
+                    <div class="flex space-x-2">
+                        <input 
+                            type="text" 
+                            id="facultyName" 
+                            class="flex-grow p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                            placeholder="Enter Faculty Name"
+                        >
+                        <button 
+                            onclick="searchFaculty()" 
+                            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                            Search
+                        </button>
+                    </div>
+                    <div id="facultySearchResult" class="mt-3 text-sm"></div>
+                </div>
             </div>
-            <div class="details-content">
-                <div id="blockInfoList" class="block-info-list">
-                    <p class="text-gray-500">Click on a block in the campus map to see its details.</p>
+
+            <!-- Block Info Container -->
+            <div class="flex-grow overflow-hidden">
+                <h2 id="infoTitle" class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">
+                    <i class="ri-building-line mr-2 text-blue-600"></i>
+                    Select a Block
+                </h2>
+                <div id="blockInfoList" class="block-info-list scrollbar-hide pr-2">
+                    <p class="text-gray-500 text-center">Click on a block in the campus map to see its details.</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let at_time_slot = 5;
+        let at_time_slot = 1;
         let day = 'MON';
 
         function showInfo(blockId) {
+            // Remove active class from all blocks
+            document.querySelectorAll('.block').forEach(block => {
+                block.classList.remove('active');
+            });
+
+            // Add active class to selected block
+            const selectedBlock = document.querySelector(`.block[data-block="${blockId}"]`);
+            if (selectedBlock) {
+                selectedBlock.classList.add('active');
+            }
+
             const infoTitle = document.getElementById('infoTitle');
             const blockInfoList = document.getElementById('blockInfoList');
             
@@ -151,11 +175,11 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        infoTitle.textContent = `Error`;
+                        infoTitle.innerHTML = `<i class="ri-error-warning-line mr-2 text-red-600"></i> Error`;
                         blockInfoList.innerHTML = `<p class="text-red-500">${data.error}</p>`;
                     } else {
                         // Update title
-                        infoTitle.textContent = `Block ${blockId} Details`;
+                        infoTitle.innerHTML = `<i class="ri-building-line mr-2 text-blue-600"></i> Block ${blockId} Details`;
                         
                         // Create info items for each room
                         data.forEach(item => {
@@ -167,9 +191,7 @@
                                     <p class="text-sm text-gray-600">Block ${item.block} - Room ${item.room_no}</p>
                                 </div>
                                 <div class="text-blue-600 font-medium">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                                    </svg>
+                                    <i class="ri-check-line text-2xl"></i>
                                 </div>
                             `;
                             blockInfoList.appendChild(infoItem);
@@ -177,8 +199,48 @@
                     }
                 })
                 .catch(error => {
-                    infoTitle.textContent = `Error`;
+                    infoTitle.innerHTML = `<i class="ri-error-warning-line mr-2 text-red-600"></i> Error`;
                     blockInfoList.innerHTML = `<p class="text-red-500">An error occurred while retrieving the data.</p>`;
+                    console.error('Error:', error);
+                });
+        }
+
+        function searchFaculty() {
+            const facultyName = document.getElementById('facultyName').value.trim();
+            const facultySearchResult = document.getElementById('facultySearchResult');
+
+            // Clear previous search results
+            facultySearchResult.innerHTML = '';
+
+            // Check if faculty name is provided
+            if (!facultyName) {
+                facultySearchResult.innerHTML = '<p class="text-red-500"><i class="ri-warning-line mr-1"></i>Please enter a faculty name to search.</p>';
+                return;
+            }
+
+            // Send AJAX request to fetch faculty data
+            fetch(`getFacultySearch.php?facultyName=${facultyName}&at_time_slot=${at_time_slot}&day=${day}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        facultySearchResult.innerHTML = `<p class="text-red-500"><i class="ri-error-warning-line mr-1"></i>${data.error}</p>`;
+                    } else {
+                        const locationInfo = data[0].block && data[0].room_no 
+                            ? `<i class="ri-map-pin-line mr-1 text-blue-600"></i>Location: ${data[0].block} - ${data[0].room_no}` 
+                            : '<i class="ri-map-pin-line mr-1 text-gray-400"></i>Location not available';
+
+                        facultySearchResult.innerHTML = `
+                            <div class="bg-blue-50 p-3 rounded-md">
+                                <p class="text-green-600 font-semibold flex items-center">
+                                    <i class="ri-user-line mr-2"></i>${data[0].name}
+                                </p>
+                                <p class="text-gray-600 mt-1">${locationInfo}</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    facultySearchResult.innerHTML = '<p class="text-red-500"><i class="ri-error-warning-line mr-1"></i>An error occurred while retrieving the faculty data.</p>';
                     console.error('Error:', error);
                 });
         }
